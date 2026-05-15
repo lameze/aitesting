@@ -2,14 +2,28 @@ import asyncio
 import base64
 import json
 import os
-from datetime import datetime
 from pathlib import Path
 from anthropic import Anthropic
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 MODEL = "claude-sonnet-4.6"
-SCREENSHOTS_DIR = Path("screenshots")
+
+# Always resolve screenshots relative to the project root (where this package lives)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SCREENSHOTS_BASE = PROJECT_ROOT / "screenshots"
+
+
+def _next_run_dir() -> Path:
+    """Return the next numbered run folder, e.g. screenshots/3/"""
+    SCREENSHOTS_BASE.mkdir(exist_ok=True)
+    existing = sorted(
+        [int(p.name) for p in SCREENSHOTS_BASE.iterdir() if p.is_dir() and p.name.isdigit()],
+    )
+    next_num = (existing[-1] + 1) if existing else 1
+    run_dir = SCREENSHOTS_BASE / str(next_num)
+    run_dir.mkdir()
+    return run_dir
 
 
 class MoodleAgent:
@@ -19,12 +33,15 @@ class MoodleAgent:
             base_url=os.environ["MOODLE_AI_BASE_URL"],
         )
         self.moodle_url = os.environ["MOODLE_QA_URL"]
-        SCREENSHOTS_DIR.mkdir(exist_ok=True)
+        self.run_dir = _next_run_dir()
+        print(f"📁 Screenshots folder: {self.run_dir}")
 
     def _save_screenshot(self, data: str, label: str = "screenshot") -> Path:
-        """Save a base64-encoded screenshot to disk and return its path."""
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        path = SCREENSHOTS_DIR / f"{ts}_{label}.png"
+        """Save a base64-encoded screenshot into this run's folder."""
+        # Use a counter so files sort in step order: 01_step.png, 02_evidence.png …
+        existing = list(self.run_dir.glob("*.png"))
+        index = len(existing) + 1
+        path = self.run_dir / f"{index:02d}_{label}.png"
         path.write_bytes(base64.b64decode(data))
         print(f"   📸 Saved: {path}")
         return path
@@ -34,8 +51,10 @@ class MoodleAgent:
 
         server_params = StdioServerParameters(
             command="npx",
-            # Run headed (not headless) — required for reliable drag-and-drop events
-            args=["@playwright/mcp"],
+            # Run headed (not headless) — required for reliable drag-and-drop events.
+            # Explicit viewport avoids Moodle's responsive breakpoints collapsing
+            # the header into mobile layout (which is what happens at the default size).
+            args=["@playwright/mcp", "--viewport-size", "1280,800"],
             env=None,
         )
 

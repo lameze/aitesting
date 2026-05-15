@@ -10,8 +10,8 @@ venv/
 __pycache__/
 *.pyc
 
-# Screenshots & evidence
-screenshots/*.png
+# Screenshots & evidence — ignore numbered run folders, keep base folder via .gitkeep
+screenshots/*/
 *.png
 
 # Playwright MCP runtime logs
