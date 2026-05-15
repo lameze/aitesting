@@ -1,0 +1,9 @@
+{
+  "name": "aitesting",
+  "version": "1.0.0",
+  "description": "Moodle AI testing POC using Chrome MCP",
+  "dependencies": {
+    "@playwright/mcp": "latest"
+  }
+}
+

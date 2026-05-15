@@ -1,0 +1,23 @@
+# Secrets
+.env
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Screenshots & evidence
+screenshots/*.png
+*.png
+
+# Playwright MCP runtime logs
+.playwright-mcp/
+
+# IDE
+.idea/workspace.xml
+.idea/copilot.data.migration.ask2agent.xml
+
