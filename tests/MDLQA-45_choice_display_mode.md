@@ -14,7 +14,6 @@
 
 ### Login as teacher
 1. Navigate to the Moodle site homepage
-2. Click the "Log in" link
 3. Enter username: "teacher"
 4. Enter password: "moodle"
 5. Click the "Log in" button
